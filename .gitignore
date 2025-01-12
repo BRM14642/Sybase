@@ -176,3 +176,4 @@ cython_debug/
 
 # project
 scripts/downloaded/*
+scripts/outputs/*
