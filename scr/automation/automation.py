@@ -1,4 +1,9 @@
+import os
+
+from scr.automation.git import Git
+from scr.automation.jira import Jira
 from scr.automation.sybase import Sybase
+from scr.utils.logging_config import logger
 
 
 class Automation:
@@ -27,3 +32,20 @@ class Automation:
         for column in new_columns:
             print(f"Nuevo campo: {column['name']}, Tipo: {column['type']}")
 
+
+    def update_branches_from_task(self, task_key):
+        logger.info(f"INICIA LA ACTUALIZACIÓN DE LAS RAMAS DE LA TAREA {task_key}...")
+        jira = Jira()
+        git = Git()
+
+        branches = jira.get_branches_from_task(task_key)
+
+        for branch in branches:
+            name_repository = branch['name_repository']
+            logger.info(f"Procesando la rama de {name_repository}...")
+            clone_url = git.generate_clone_url(branch['url_repository'])
+            path = git.find_or_clone_repo(os.getenv("LOCAL_REPOSITORY"), name_repository, clone_url)
+            git.update_branch(path, branch['name'])
+            logger.info(f"=== Rama de {name_repository} procesada ===")
+
+        logger.info(f"FINALIZA PROCESO DE ACTUALIZACIÓN DE RAMAS.")

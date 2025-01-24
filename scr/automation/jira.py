@@ -1,0 +1,168 @@
+import os
+import requests
+from jira import JIRA
+from dotenv import load_dotenv
+
+from scr.utils.logging_config import logger
+from scr.utils.utils import get_dev_status
+load_dotenv()
+
+class Jira:
+
+    def __init__(self):
+        self.auth = (os.getenv("JIRA_USER"), os.getenv("JIRA_PASSWORD"))
+        self.server = os.getenv("JIRA_DOMAIN")
+        self.server_bitbucket = os.getenv("BITBUCKET_DOMAIN")
+        self.jira = JIRA(server=self.server, basic_auth=self.auth)
+        self.project_id = self.get_project_id(os.getenv("JIRA_PROJECT_KEY"))
+
+    def test_connection(self):
+        try:
+            user = self.jira.myself()
+            print(f"Conexion exitosa. Usuario: {user['emailAddress']}")
+            return True
+        except Exception as e:
+            print(f"Error al conectar: {e}")
+            return False
+
+    def get_current_sprint(self, board_id):
+        sprints = self.jira.sprints(board_id, state='active')
+        if sprints:
+            return sprints[0].name
+        else:
+            return "No hay sprints activos :V"
+
+    def get_sprint_stories(self, sprint_id):
+        jql_query = f'sprint = {sprint_id} AND issuetype = Story'
+        return self.jira.search_issues(jql_query)
+
+    def list_issue_types(self):
+        issue_types = self.jira.issue_types()
+        for issue_type in issue_types:
+            print(f"ID: {issue_type.id}, Name: {issue_type.name}")
+
+    def get_issue_type_id(self, issue_type_name):
+        issue_types = self.jira.issue_types()
+        for issue_type in issue_types:
+            if issue_type.name == issue_type_name:
+                return issue_type.id
+        return None
+
+    def list_fields(self, issue_key):
+        issue = self.jira.issue(issue_key)
+        for field_name, field_value in issue.fields.__dict__.items():
+            print(f"{field_name}: {field_value}")
+        fields = issue.fields
+        print("Campos disponibles:")
+        print(dir(fields))
+
+    def list_projects(self):
+        projects = self.jira.projects()
+        for project in projects:
+            print(f"ID: {project.id} -> Key: {project.key} -> Name: {project.name}")
+
+    def print_all_fields_metadata(self):
+        all_fields = self.jira.fields()
+        for field in all_fields:
+            print(f"ID: {field['id']}, Name: {field['name']}, Schema: {field.get('schema', {})}")
+
+    def get_project_id(self, project_key):
+        project = self.jira.project(project_key)
+        return project.id
+
+    def create_architecture_task(self, key_issue_develop, summary, description, status_change):
+        """
+        Crea una tarea de arquitectura de datos en Jira.
+        :param key_issue_develop: Key de la tarea de tipo Installation Package donde tenemos el desarrollo
+        :param summary: Título de la tarea a crear
+        :param description: Descripción de la tarea a generar
+        :param status_change: Estado del desarrollo
+        :return: Objeto de la tarea generada
+        """
+        parent_key = self.get_parent_key(key_issue_develop)
+
+        issue_dict = {
+            'project': self.project_id,
+            'summary': summary,
+            'description': description,
+            'issuetype': {'name': 'Data Architecture Sub-Task'},
+            'parent': {'key': parent_key},
+            'customfield_11517': '',
+            'customfield_15400': {'id': get_dev_status(status_change)},
+        }
+
+        new_issue = self.jira.create_issue(fields=issue_dict)
+        print(f"Subtarea creada: {new_issue.key}")
+        return new_issue
+
+    def get_parent_key(self, subtask_key):
+        subtask = self.jira.issue(subtask_key)
+        return subtask.fields.parent.key
+
+    def get_intern_id(self, issue_key):
+        issue = self.jira.issue(issue_key)
+        return issue.id  # Este es el ID interno necesario para el API de desarrollo
+
+    # Obtener los datos de desarrollo de una tarea
+    def get_develop_info(self, task_key):
+        logger.info(f"Obteniendo información de desarrollo de la tarea {task_key}...")
+        issue_id = self.get_intern_id(task_key)
+        url = f"{self.server}/rest/dev-status/1.0/issue/detail?issueId={issue_id}&applicationType=stash&dataType=pullrequest"
+        params = {
+            "issueId": issue_id,  # Usar el ID de la tarea
+            "applicationType": "bitbucket",  # Especifica Bitbucket como origen
+            "dataType": "branch",  # Solicitar información de ramas
+        }
+        response = requests.get(url, params=params, auth=self.auth)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error al obtener ramas: {response.status_code} - {response.text}")
+
+        return None
+
+    # Obtener las branches ligadas a la tarea
+    def get_branches_from_task(self, task_key):
+        data = self.get_develop_info(task_key)
+        branches_info = []
+        if data.get("detail"):
+            detail = data["detail"][0]
+            branches = detail.get("branches", [])
+            for branch in branches:
+                branch_info = {
+                    "name": branch['name'],
+                    "diff_url": branch['url'],
+                    "name_repository": branch['repository']['name'],
+                    "url_repository": branch['repository']['url']
+                }
+                branches_info.append(branch_info)
+        else:
+            print("No se encontraron datos relacionados.")
+        return branches_info
+
+    # Obtener las pullrequest ligadas a la tarea
+    def get_pullrequest_from_task(self, task_key):
+        data = self.get_develop_info(task_key)
+        if data.get("detail"):
+            detail = data["detail"][0]
+            pull_requests = detail.get("pullRequests", [])
+            print("Pull Requests relacionados:")
+            for pr in pull_requests:
+                print(f"Pull Request: {pr['name']}")
+                print(f"Source Branch: {pr['source']['repository']}")
+                print("-" * 40)
+        else:
+            print("No se encontraron datos relacionados.")
+
+    def get_diff_branch(self, workspace, name_repository, source_branch, destination_branch = "develop"):
+        url = f"{self.server_bitbucket}/rest/api/1.0/projects/{workspace}/repos/{name_repository}/compare/changes?from={source_branch}&to={destination_branch}"
+
+        response = requests.get(url, auth=self.auth)
+
+        if response.status_code == 200:
+            diffstat = response.json()
+            for diff in diffstat.get("values", []):
+                print(f"Archivo: {diff['path']['components']} - Estado: {diff['properties']['gitChangeType']}")
+        else:
+            print(f"Error al obtener las diferencias: {response.status_code} - {response.text}")
+

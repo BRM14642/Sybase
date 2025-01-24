@@ -23,6 +23,15 @@ SYBASE_DEFAULT_VALUES = {
     "image": b"",
 }
 
+# Diccionario de estatus posibles en tareas de
+DEV_STATUS_VALUES = {
+    "Análisis": '23303',
+    "Desarrollo": '23304',
+    "Diseño": '23305',
+    "QA": '23306',
+    "Instalación": '23307',
+}
+
 def get_default_value(data_type):
     """
     Devuelve el valor por defecto para un tipo de dato Sybase ASE.
@@ -38,3 +47,6 @@ def get_default_value_to_string(data_type):
         return str(SYBASE_DEFAULT_VALUES.get(data_type.lower(), None))
 
     return f"'{SYBASE_DEFAULT_VALUES.get(data_type.lower(), None)}'"
+
+def get_dev_status(dev_status):
+    return DEV_STATUS_VALUES.get(dev_status, None)
