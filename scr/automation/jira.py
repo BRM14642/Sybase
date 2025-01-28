@@ -13,12 +13,12 @@ class Jira:
         self.auth = (os.getenv("JIRA_USER"), os.getenv("JIRA_PASSWORD"))
         self.server = os.getenv("JIRA_DOMAIN")
         self.server_bitbucket = os.getenv("BITBUCKET_DOMAIN")
-        self.jira = JIRA(server=self.server, basic_auth=self.auth)
+        self.jira_session = JIRA(server=self.server, basic_auth=self.auth)
         self.project_id = self.get_project_id(os.getenv("JIRA_PROJECT_KEY"))
 
     def test_connection(self):
         try:
-            user = self.jira.myself()
+            user = self.jira_session.myself()
             print(f"Conexion exitosa. Usuario: {user['emailAddress']}")
             return True
         except Exception as e:
@@ -26,7 +26,7 @@ class Jira:
             return False
 
     def get_current_sprint(self, board_id):
-        sprints = self.jira.sprints(board_id, state='active')
+        sprints = self.jira_session.sprints(board_id, state='active')
         if sprints:
             return sprints[0].name
         else:
@@ -34,22 +34,26 @@ class Jira:
 
     def get_sprint_stories(self, sprint_id):
         jql_query = f'sprint = {sprint_id} AND issuetype = Story'
-        return self.jira.search_issues(jql_query)
+        return self.jira_session.search_issues(jql_query)
 
     def list_issue_types(self):
-        issue_types = self.jira.issue_types()
+        issue_types = self.jira_session.issue_types()
         for issue_type in issue_types:
             print(f"ID: {issue_type.id}, Name: {issue_type.name}")
 
     def get_issue_type_id(self, issue_type_name):
-        issue_types = self.jira.issue_types()
+        issue_types = self.jira_session.issue_types()
         for issue_type in issue_types:
             if issue_type.name == issue_type_name:
                 return issue_type.id
         return None
 
-    def list_fields(self, issue_key):
-        issue = self.jira.issue(issue_key)
+    def list_fields_from_task(self, issue_key):
+        """
+        Imprime la lista de los campos disponibles en una tarea de jira
+        :param  issue_key: Key de la tarea
+        """
+        issue = self.jira_session.issue(issue_key)
         for field_name, field_value in issue.fields.__dict__.items():
             print(f"{field_name}: {field_value}")
         fields = issue.fields
@@ -57,17 +61,17 @@ class Jira:
         print(dir(fields))
 
     def list_projects(self):
-        projects = self.jira.projects()
+        projects = self.jira_session.projects()
         for project in projects:
             print(f"ID: {project.id} -> Key: {project.key} -> Name: {project.name}")
 
     def print_all_fields_metadata(self):
-        all_fields = self.jira.fields()
+        all_fields = self.jira_session.fields()
         for field in all_fields:
             print(f"ID: {field['id']}, Name: {field['name']}, Schema: {field.get('schema', {})}")
 
     def get_project_id(self, project_key):
-        project = self.jira.project(project_key)
+        project = self.jira_session.project(project_key)
         return project.id
 
     def create_architecture_task(self, key_issue_develop, summary, description, status_change):
@@ -91,16 +95,16 @@ class Jira:
             'customfield_15400': {'id': get_dev_status(status_change)},
         }
 
-        new_issue = self.jira.create_issue(fields=issue_dict)
+        new_issue = self.jira_session.create_issue(fields=issue_dict)
         print(f"Subtarea creada: {new_issue.key}")
         return new_issue
 
     def get_parent_key(self, subtask_key):
-        subtask = self.jira.issue(subtask_key)
+        subtask = self.jira_session.issue(subtask_key)
         return subtask.fields.parent.key
 
     def get_intern_id(self, issue_key):
-        issue = self.jira.issue(issue_key)
+        issue = self.jira_session.issue(issue_key)
         return issue.id  # Este es el ID interno necesario para el API de desarrollo
 
     # Obtener los datos de desarrollo de una tarea
@@ -118,7 +122,6 @@ class Jira:
             return response.json()
         else:
             print(f"Error al obtener ramas: {response.status_code} - {response.text}")
-
         return None
 
     # Obtener las branches ligadas a la tarea
@@ -166,3 +169,39 @@ class Jira:
         else:
             print(f"Error al obtener las diferencias: {response.status_code} - {response.text}")
 
+    def get_field_id_from_description(self, issue_key, field_name, description):
+        url = f"https://devops.banregio.com:8443/rest/api/2/issue/{issue_key}/editmeta"
+        response = requests.get(url,
+                                auth=('username', 'password'))  # Reemplaza 'username' y 'password' con tus credenciales
+        response.raise_for_status()
+        metadata = response.json()
+
+        fields = metadata.get('fields', {})
+        field = fields.get(field_name, {})
+        allowed_values = field.get('allowedValues', [])
+
+        for value in allowed_values:
+            if value.get('name') == description:
+                return value.get('id')
+
+        return None
+
+    def get_field_id_from_description2(self, field_name, description):
+        url = "https://devops.banregio.com:8443/rest/api/2/field"
+        response = requests.get(url,
+                                auth=('username', 'password'))  # Reemplaza 'username' y 'password' con tus credenciales
+        response.raise_for_status()
+        fields = response.json()
+
+        for field in fields:
+            if field['name'] == field_name:
+                allowed_values = field.get('allowedValues', [])
+                for value in allowed_values:
+                    if value.get('name') == description:
+                        return value.get('id')
+
+    # Function to get and print issue fields metadata
+    def print_issue_fields_metadata(self, issue_key):
+        issue = self.jira_session.issue(issue_key)
+        for field_name, field_value in issue.raw['fields'].items():
+            print(f"{field_name}: {field_value}")
