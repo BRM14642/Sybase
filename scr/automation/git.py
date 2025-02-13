@@ -8,7 +8,7 @@ load_dotenv()
 class Git:
 
     def __init__(self):
-        self.local_repos = '/Users/ivan.riveros/Documents/Clonado/Originales'
+        self.local_repos = os.getenv("LOCAL_REPOSITORY")
 
     def is_git_repo(self, folder):
         return os.path.isdir(os.path.join(folder, '.git'))
@@ -85,28 +85,24 @@ class Git:
 
     def update_branch(self, repo_path, branch_name):
         try:
-            logger.info(f'Checking out branch {branch_name}')
-            self.run_command(['git', 'checkout', branch_name], cwd=repo_path)
-
-            logger.info(f'Pulling latest changes for branch {branch_name}')
-            self.run_command(['git', 'pull'], cwd=repo_path)
-
-            logger.info('Checking out develop branch')
+            logger.info('git checkout develop')
             self.run_command(['git', 'checkout', 'develop'], cwd=repo_path)
 
-            logger.info('Pulling latest changes for develop branch')
+            logger.info('git pull')
             self.run_command(['git', 'pull'], cwd=repo_path)
 
-            logger.info(f'Checking out branch {branch_name} again')
+            logger.info(f'git checkout {branch_name}')
             self.run_command(['git', 'checkout', branch_name], cwd=repo_path)
 
-            logger.info('Merging develop into current branch')
+            logger.info('git pull')
+            self.run_command(['git', 'pull'], cwd=repo_path)
+
+            logger.info('git merge develop -m Merge develop into feature')
             self.run_command(['git', 'merge', 'develop', '-m', 'Merge develop into feature'], cwd=repo_path)
 
-            logger.info('Pushing changes to remote repository')
+            logger.info('git push')
             self.run_command(['git', 'push'], cwd=repo_path)
 
-            logger.info(f'Branch {branch_name} updated successfully with merge from develop.')
         except subprocess.CalledProcessError as e:
             logger.error(f'Failed to update branch {branch_name}: {e}')
 
