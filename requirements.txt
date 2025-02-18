@@ -1,3 +1,11 @@
 pyodbc
 requests
 python-dotenv
+jira
+colorlog
+odfpy
+pyexcel-ods
+pyexcel-ods3
+reportlab
+unotools
+pyuno
