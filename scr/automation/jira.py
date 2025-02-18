@@ -48,6 +48,9 @@ class Jira:
                 return issue_type.id
         return None
 
+    def get_value_field(self, issue, field_name):
+        return getattr(issue.fields, field_name, None)
+
     def list_fields_from_task(self, issue_key):
         """
         Imprime la lista de los campos disponibles en una tarea de jira
@@ -105,7 +108,7 @@ class Jira:
 
     def get_intern_id(self, issue_key):
         issue = self.jira_session.issue(issue_key)
-        return issue.id  # Este es el ID interno necesario para el API de desarrollo
+        return issue.id  # Este es el ID interno necesario para la API de desarrollo
 
     # Obtener los datos de desarrollo de una tarea
     def get_develop_info(self, task_key):
@@ -121,7 +124,7 @@ class Jira:
         if response.status_code == 200:
             return response.json()
         else:
-            print(f"Error al obtener ramas: {response.status_code} - {response.text}")
+            logger.warning(f"Error al obtener ramas: {response.status_code} - {response.text}")
         return None
 
     # Obtener las branches ligadas a la tarea
@@ -132,15 +135,16 @@ class Jira:
             detail = data["detail"][0]
             branches = detail.get("branches", [])
             for branch in branches:
+                project_id = self.extract_project_name(branch['repository']['url'])
                 branch_info = {
-                    "name": branch['name'],
-                    "diff_url": branch['url'],
+                    "branch_name": branch['name'],
+                    "project_id": project_id,
                     "name_repository": branch['repository']['name'],
                     "url_repository": branch['repository']['url']
                 }
                 branches_info.append(branch_info)
         else:
-            print("No se encontraron datos relacionados.")
+            logger.warning("No se encontraron datos relacionados.")
         return branches_info
 
     # Obtener las pullrequest ligadas a la tarea
@@ -157,17 +161,30 @@ class Jira:
         else:
             print("No se encontraron datos relacionados.")
 
-    def get_diff_branch(self, workspace, name_repository, source_branch, destination_branch = "develop"):
+    def get_diff_branch(self, workspace, name_repository, source_branch, destination_branch="develop"):
+        logger.debug(f"Obteniendo diferencias de {workspace}/{name_repository} entre las ramas {source_branch} y {destination_branch}...")
         url = f"{self.server_bitbucket}/rest/api/1.0/projects/{workspace}/repos/{name_repository}/compare/changes?from={source_branch}&to={destination_branch}"
 
         response = requests.get(url, auth=self.auth)
 
         if response.status_code == 200:
             diffstat = response.json()
+
+            changes = []
             for diff in diffstat.get("values", []):
-                print(f"Archivo: {diff['path']['components']} - Estado: {diff['properties']['gitChangeType']}")
+                change_info = {
+                    "project": workspace,
+                    "repository": name_repository,
+                    "name_file": diff['path']['name'],
+                    "path_file": diff['path']['toString'],
+                    "extension": diff['path']['extension'],
+                    "status": diff['properties']['gitChangeType']
+                }
+                changes.append(change_info)
+            return changes
         else:
-            print(f"Error al obtener las diferencias: {response.status_code} - {response.text}")
+            logger.error(f"Error al obtener las diferencias: {response.status_code} - {response.text}")
+            return []
 
     def get_field_id_from_description(self, issue_key, field_name, description):
         url = f"https://devops.banregio.com:8443/rest/api/2/issue/{issue_key}/editmeta"
@@ -204,4 +221,35 @@ class Jira:
     def print_issue_fields_metadata(self, issue_key):
         issue = self.jira_session.issue(issue_key)
         for field_name, field_value in issue.raw['fields'].items():
-            print(f"{field_name}: {field_value}")
+            descri = self.get_custom_field_description(field_name)
+            print(f"{descri} --> {field_name}: {field_value}")
+
+    def extract_project_name(self, url):
+        """
+        Extracts the project name from a Bitbucket URL.
+        :param url: The URL containing the project name
+        :return: The project name
+        """
+        parts = url.split('/')
+        if 'projects' in parts:
+            project_index = parts.index('projects') + 1
+            if project_index < len(parts):
+                return parts[project_index]
+        return 'Unknown Project'
+
+
+    def execute_jql(self, jql_query):
+        """
+        Execute a JQL query in Jira.
+        :param jql_query: The JQL query to execute
+        :return: The result of the query
+        """
+        return self.jira_session.search_issues(jql_query)
+
+    def get_custom_field_description(self, custom_field_id):
+        all_fields = self.jira_session.fields()
+        for field in all_fields:
+            if field['id'] == custom_field_id:
+                return field['name']
+        print(f"Custom field {custom_field_id} not found")
+        return 'Custom field not found'
