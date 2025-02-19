@@ -129,7 +129,7 @@ class Automation:
 
 
     def fill_helpdesk(self, key_jira):
-        self.jira.list_fields_from_task(key_jira)
+        # self.jira.list_fields_from_task(key_jira)
         issue = self.jira.jira_session.issue(key_jira)
         num_cambio = self.jira.get_value_field(issue, 'customfield_11101').strip()
 
@@ -212,6 +212,8 @@ class Automation:
         created_sps = ''
         modified_sps = ''
 
+        client_module_sib3 = ''
+        server_module_sib3 = ''
         for branch in branches_info:
             for modified_object in branch:
                 project = modified_object.get('project')
@@ -223,7 +225,13 @@ class Automation:
                 if project == 'SIB3P':
                     parts = repo.rsplit('-', 1)
                     type_sib3 = parts[-1] if len(parts) > 1 else ''
-                    project = get_server_br(f"{project}-{type_sib3}")
+
+                    if type_sib3 == 'extjs' and repo not in client_module_sib3:
+                        client_module_sib3 = f'{client_module_sib3}*{repo}\n'
+                    elif type_sib3 == 'api' and server_module_sib3 != '':
+                        server_module_sib3 = '\t*sibamex-serviciosweb-principal.war\n'
+
+                    project = f"{project}-{type_sib3}"
 
                 server_br = get_server_br(project)
                 if server_br:
@@ -278,6 +286,10 @@ class Automation:
         modified_sps = clean_string(modified_sps)
 
 
+        client_module_sib3 = f'Cliente Sibamex3:\n\t{clean_string(client_module_sib3)}' if client_module_sib3 != '' else ''
+        server_module_sib3 = f'Servidor Sibamex3:\n\t{clean_string(server_module_sib3)}' if server_module_sib3 != '' else ''
+        ejecutables = f'{client_module_sib3}\n{server_module_sib3}'
+
         control_cambios = issue.fields.customfield_11101
 
         comments = f'Para la instalación realizar los pasos en el orden indicado en el archivo {control_cambios}_PlanInstalacion.txt \nEn caso de reversa realizar los pasos en el orden indicado en el archivo {control_cambios}_PlanReversa.txt'
@@ -285,6 +297,7 @@ class Automation:
 
         ods_handler_br = ODSHandler(file_path, 'Hoja Instalación_Br')
 
+        ods_handler_br.write_cell(5, 0, issue.fields.description.strip())
         ods_handler_br.write_cell(13, 1, banregio_servers)
 
         ods_handler_br.write_cell(31, 2, created_tables)
@@ -294,6 +307,8 @@ class Automation:
         ods_handler_br.write_cell(40, 2, created_sps)
         ods_handler_br.write_cell(41, 1, modified_sps)
 
+        ods_handler_br.write_cell(52, 1, ejecutables)
+
         ods_handler_br.write_cell(58, 0, comments)
 
         ods_handler_br.save()
@@ -301,6 +316,7 @@ class Automation:
 
         ods_handler_hey = ODSHandler(file_path, 'Hoja Instalación_Hey')
 
+        ods_handler_hey.write_cell(5, 0, issue.fields.description.strip())
         ods_handler_hey.write_cell(13, 1, hey_servers)
 
         ods_handler_hey.write_cell(31, 2, created_tables)
@@ -310,6 +326,7 @@ class Automation:
         ods_handler_hey.write_cell(40, 2, created_sps)
         ods_handler_hey.write_cell(41, 1, modified_sps)
 
+        ods_handler_hey.write_cell(52, 1, ejecutables)
         ods_handler_hey.write_cell(58, 0, comments)
 
         ods_handler_hey.save()
