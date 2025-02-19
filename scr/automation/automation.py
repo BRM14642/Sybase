@@ -5,6 +5,7 @@ import subprocess
 from scr.automation.excel import ODSHandler
 from scr.automation.git import Git
 from scr.automation.jira import Jira
+from scr.automation.libreoffice import LibreOffice
 from scr.automation.sybase import Sybase
 from scr.utils.logging_config import logger
 from scr.utils.utils import get_dev_status, remove_sql_extension, capitalize_initials, get_server_hey, get_server_br, clean_string
@@ -130,12 +131,12 @@ class Automation:
     def fill_helpdesk(self, key_jira):
         self.jira.list_fields_from_task(key_jira)
         issue = self.jira.jira_session.issue(key_jira)
-        num_cambio = self.jira.get_value_field(issue, 'customfield_11101')
+        num_cambio = self.jira.get_value_field(issue, 'customfield_11101').strip()
 
         branches_info = self.jira.get_branches_from_task(key_jira)
 
         template_dir = '/Users/ivan.riveros/Documents/MisAutomatizaciones/Sybase/files/templates'
-        output_dir = f'/Users/ivan.riveros/Documents/MisAutomatizaciones/Sybase/files/paquetes/{num_cambio}_DEV_V1'
+        output_dir = f'/Users/ivan.riveros/Documents/MisAutomatizaciones/Sybase/files/outputs/{num_cambio}_DEV_V1'
 
         helpdesk_template_file_path = f'{template_dir}/Template_HelpDesk.ods'
         new_helpdesk_file_path = f'{output_dir}/{key_jira}_HelpDesk.ods'
@@ -157,6 +158,8 @@ class Automation:
 
         self.fill_estimation_file(new_estimacion_file_path, issue, modified_objects)
 
+        libreoffice_process = LibreOffice.start_libreoffice_headless()
+
         # Exportar a pdf según aplique
         sheet_to_export = 'Hoja Instalación_Br'
         pdf_file_path = f'{output_dir}/{num_cambio}_HojaInstalacionBanregio.pdf'
@@ -169,6 +172,8 @@ class Automation:
         sheet_to_export = 'Carta Aceptación Pruebas'
         pdf_file_path = f'{output_dir}/{num_cambio}_Carta Aceptacion de Pruebas.pdf'
         self.ejecutar_exportacion(new_helpdesk_file_path, sheet_to_export, pdf_file_path)
+
+        LibreOffice.stop_libreoffice_headless(libreoffice_process)
 
 
     def fill_params_sheet(self, file_path, issue):
@@ -464,7 +469,7 @@ class Automation:
         ods_handler.write_cell(1, 1, creador)
         ods_handler.write_cell(2, 1, usuario)
         ods_handler.write_cell(3, 1, capitalize_initials(str(self.jira.get_value_field(issue, 'customfield_12709'))))
-        ods_handler.write_cell(4, 1, capitalize_initials(gerente_desarrollo))
+        ods_handler.write_cell(4, 1, capitalize_initials(str(gerente_desarrollo)))
         ods_handler.write_cell(5, 1, issue.key)
 
         ods_handler.save()

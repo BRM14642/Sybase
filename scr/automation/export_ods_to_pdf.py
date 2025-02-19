@@ -1,21 +1,5 @@
-import subprocess
-import time
 import uno
 import sys
-
-def start_libreoffice_headless():
-    libreoffice_cmd = [
-        "/Applications/LibreOffice.app/Contents/MacOS/soffice",
-        "--headless",
-        "--accept=socket,host=localhost,port=2002;urp;"
-    ]
-    process = subprocess.Popen(libreoffice_cmd)
-    time.sleep(5)  # Wait for LibreOffice to start
-    return process
-
-def stop_libreoffice_headless(process):
-    process.terminate()
-    process.wait()
 
 def exportar_hoja_con_formato(archivo_ods, nombre_hoja, archivo_pdf):
     # Conectar con LibreOffice en modo headless
@@ -32,6 +16,9 @@ def exportar_hoja_con_formato(archivo_ods, nombre_hoja, archivo_pdf):
     props[0].Name = "Hidden"
     props[0].Value = True
     doc = desktop.loadComponentFromURL(url, "_blank", 0, props)
+
+    # Forzar el recálculo de todas las fórmulas
+    doc.calculateAll()
 
     # Ocultar todas las hojas excepto la deseada
     hojas = doc.Sheets
@@ -70,9 +57,7 @@ if __name__ == "__main__":
     nombre_hoja = sys.argv[2]
     archivo_pdf = sys.argv[3]
 
-    #libreoffice_process = start_libreoffice_headless()
     try:
         exportar_hoja_con_formato(archivo_ods, nombre_hoja, archivo_pdf)
-    finally:
-        print('Cerrando LibreOffice...')
-        #stop_libreoffice_headless(libreoffice_process)
+    except Exception as e:
+        print(f"❌ Error al exportar: {e}")
