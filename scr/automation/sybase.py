@@ -160,7 +160,7 @@ class Sybase:
 
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/respaldo.sql')
+        template = ScriptHandler('scripts/templates/tables/respaldo.sql')
         temp = template.load_template()
 
         if not temp:
@@ -178,7 +178,7 @@ class Sybase:
         template.save_script(script, output_path)
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/validacion.sql')
+        template = ScriptHandler('scripts/templates/tables/validacion.sql')
         temp = template.load_template()
 
         if not temp:
@@ -193,7 +193,7 @@ class Sybase:
         template.save_script(script, output_path)
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/validacion.sql')
+        template = ScriptHandler('scripts/templates/tables/validacion.sql')
         temp = template.load_template()
 
         if not temp:
@@ -208,7 +208,7 @@ class Sybase:
         template.save_script(script, output_path)
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/drop.sql')
+        template = ScriptHandler('scripts/templates/tables/drop.sql')
         temp = template.load_template()
 
         if not temp:
@@ -223,7 +223,7 @@ class Sybase:
 
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/regreso.sql')
+        template = ScriptHandler('scripts/templates/tables/regreso.sql')
         temp = template.load_template()
 
         if not temp:
@@ -249,7 +249,7 @@ class Sybase:
         template.save_script(script, output_path)
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/validacion.sql')
+        template = ScriptHandler('scripts/templates/tables/validacion.sql')
         temp = template.load_template()
 
         if not temp:
@@ -264,7 +264,7 @@ class Sybase:
         template.save_script(script, output_path)
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/drop.sql')
+        template = ScriptHandler('scripts/templates/tables/drop.sql')
         temp = template.load_template()
 
         if not temp:
@@ -278,7 +278,7 @@ class Sybase:
         template.save_script(script, output_path)
 
         # ***************************************************************************
-        template = ScriptHandler('scripts/templates/grants.sql')
+        template = ScriptHandler('scripts/templates/tables/grants.sql')
         temp = template.load_template()
 
         if not temp:
