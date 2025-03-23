@@ -1,7 +1,7 @@
 import os
 import subprocess
 from dotenv import load_dotenv
-from scr.utils.logging_config import logger
+from src.utils.logging_config import logger
 
 load_dotenv()
 
@@ -12,6 +12,14 @@ class Git:
 
     def is_git_repo(self, folder):
         return os.path.isdir(os.path.join(folder, '.git'))
+
+    def git_pull_develop(self, folder):
+        try:
+            self.run_command(['git', 'checkout', 'develop'], cwd=folder)
+            self.run_command(['git', '-C', folder, 'pull'],  cwd=folder)
+            logger.info(f'Successfully pulled in {folder}')
+        except subprocess.CalledProcessError as e:
+            logger.info(f'Failed to pull in {folder}: {e}')
 
     def git_pull(self, folder):
         try:
@@ -36,7 +44,7 @@ class Git:
 
     def git_reset_hard(self, folder):
         try:
-            subprocess.run(['git', '-C', folder, 'reset', '--hard', 'HEAD'], check=True)
+            self.run_command(['git', 'reset', '--hard', 'HEAD'], cwd=folder)
             logger.info(f'Successfully reset in {folder}')
         except subprocess.CalledProcessError as e:
             logger.info(f'Failed to reset in {folder}: {e}')
@@ -106,10 +114,43 @@ class Git:
         except subprocess.CalledProcessError as e:
             logger.error(f'Failed to update branch {branch_name}: {e}')
 
+
+    def branch_exists(self, repo_path, branch_name):
+        result = subprocess.run(['git', 'branch', '--list', branch_name], cwd=repo_path, text=True, capture_output=True)
+        return branch_name in result.stdout
+
+    def checkout_or_create_branch(self, repo_name, branch_name):
+        try:
+            repo_path = f'{self.local_repos}/{repo_name}'
+            if self.branch_exists(repo_path, branch_name):
+                logger.info(f'Branch {branch_name} exists. Checking out...')
+                self.run_command(['git', 'checkout', branch_name], cwd=repo_path)
+            else:
+                logger.info(f'Branch {branch_name} does not exist. Creating and checking out...')
+                self.run_command(['git', 'checkout', '-b', branch_name], cwd=repo_path)
+        except subprocess.CalledProcessError as e:
+            logger.error(f'Failed to checkout or create branch {branch_name}: {e}')
+
+    def git_add_commit_push(self, repo_name, branch_name, commit_message):
+        try:
+            repo_path = f'{self.local_repos}/{repo_name}'
+            self.run_command(['git', 'add', '.'], cwd=repo_path)
+            self.run_command(['git', 'commit', '-m', commit_message], cwd=repo_path)
+            self.run_command(['git', 'push', '--set-upstream', 'origin', branch_name], cwd=repo_path)
+        except subprocess.CalledProcessError as e:
+            logger.error(f'Failed to add, commit and push: {e}')
+
+    def git_clean_repo(self, repo_name):
+        try:
+            repo_path = f'{self.local_repos}/{repo_name}'
+            self.run_command(['git', 'clean', '-fd'], cwd=repo_path)
+        except subprocess.CalledProcessError as e:
+            logger.error(f'Failed to add, commit and push: {e}')
+
     def run_command(self, command, cwd):
         result = subprocess.run(command, cwd=cwd, text=True, capture_output=True)
         if result.returncode == 0:
             logger.info(result.stdout.strip())
         else:
-            logger.error(result.stderr.strip())
+            logger.error(f'ERROR al ejecutar: {command} ==>>    {result.stderr.strip()}')
         result.check_returncode()

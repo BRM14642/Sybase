@@ -1,0 +1,185 @@
+import os
+
+from src.automation.git import Git
+from src.automation.jira import Jira
+from src.automation.package import Package
+from src.automation.sybase import Sybase
+from src.scripts.script_handler import ScriptHandler
+from src.utils.logging_config import logger
+from src.utils.utils import get_dev_status, remove_sql_extension, ensure_directory_exists
+from datetime import datetime
+
+class Automation:
+    def __init__(self):
+        self.sybase = Sybase()
+        self.jira = Jira()
+        self.local_repos = os.getenv("LOCAL_REPOSITORY")
+
+    def add_fields_table(self):
+        table = input("Ingrese el nombre de la tabla: ")
+        default_repo = f"{table[:2].lower()}-tablas"
+        repo = input(f"Ingrese el nombre del repositorio donde se encuentra la tabla (o presione Enter para usar {default_repo}): ")
+        # si no se ingresa un nombre de repositorio, se usa el predeterminado
+        repo = repo or default_repo
+
+        new_columns = []
+        while True:
+            column_name = input("Ingrese el nombre del campo (o presione Enter para finalizar): ")
+            if not column_name:
+                break
+            data_type = input("Ingrese el tipo de dato del campo: ")
+            new_columns.append({'name': column_name, 'type': data_type})
+
+        sybase = Sybase()
+        sybase.modify_table(table, repo, new_columns)
+
+        # Procesar los nuevos campos ingresados
+        for column in new_columns:
+            logger.info(f"Nuevo campo: {column['name']}, Tipo: {column['type']}")
+
+
+    def update_branches_from_task(self, task_key):
+        logger.info(f"INICIA LA ACTUALIZACIÓN DE LAS RAMAS DE LA TAREA {task_key}...")
+        git = Git()
+
+        branches = self.jira.get_branches_from_task(task_key)
+
+        for branch in branches:
+            if task_key not in branch['branch_name']:
+                if input(f"¿Desea actualizar la rama {branch['branch_name']}({branch['name_repository']})? (s/n): ").lower() != 's':
+                    continue
+
+            project = branch['project_id']
+            name_repository = branch['name_repository']
+            logger.info(f"=== INICIA PROCESAMIENTO DE LA RAMA {project}/{name_repository} ===")
+
+            clone_url = git.generate_clone_url(branch['url_repository'])
+            path = git.find_or_clone_repo(os.getenv("LOCAL_REPOSITORY"), name_repository, clone_url)
+            git.git_reset_hard(path)
+            git.git_clean_repo(name_repository)
+            git.update_branch(path, branch['branch_name'])
+
+            logger.info(f"=== FINALIZA PROCESAMIENTO DE LA RAMA {project}/{name_repository} ===\n")
+
+        logger.info("FINALIZA PROCESO DE ACTUALIZACIÓN DE RAMAS.")
+
+
+    def create_architecture_task(self, key_issue_develop, summary, description, status_change):
+        """
+        Crea una tarea de arquitectura de datos en Jira.
+        :param key_issue_develop: Key de la tarea de tipo Installation Package donde tenemos el desarrollo
+        :param summary: Título de la tarea a crear
+        :param description: Descripción de la tarea a generar
+        :param status_change: Estado del desarrollo
+        :return: Objeto de la tarea generada
+        """
+        parent_key = self.jira.get_parent_key(key_issue_develop)
+
+        issue_dict = {
+            'project': self.jira.project_id,
+            'summary': summary,
+            'description': description,
+            'issuetype': {'name': 'Data Architecture Sub-Task'},
+            'parent': {'key': parent_key},
+            'customfield_11517': '',
+            'customfield_15400': {'id': get_dev_status(status_change)},
+        }
+
+        new_issue = self.jira.jira_session.create_issue(fields=issue_dict)
+        logger.info(f"Subtarea creada: {new_issue.key}")
+        return new_issue
+
+
+    # TODO: Realizar adecuaciones necesarias para crear tareas de corrección u optimización
+    def create_traditional_package_task(self, parent_key, summary, description, numero_cambio):
+        """
+        Crea una tarea de tipo 'Package Installation' de monolito en Jira.
+        :param parent_key: Key de la historia de jira sobre la que se creará la nueva tarea
+        :param summary: Título de la tarea a crear
+        :param description: Descripción de la tarea a generar
+        :param numero_cambio: Control de cambios generado en ivanti
+        :return: Objeto de la tarea generada
+        """
+        logger.info(f"Creando tarea de instalación de paquete sobre la historia {parent_key}...")
+
+        issue_dict = {
+            'project': self.jira.project_id,
+            'parent': {'key': parent_key},
+            'issuetype': {'name': 'Installation Package'},
+            'summary': summary,
+            'description': description,
+            'customfield_16802': {'id': '27309'},                       # TIPO DE INSTALACIÓN: MONOLITO
+            'customfield_12529': {'value': 'Normal'},                   # Tipo de Cambio
+            'customfield_16701': '7751637678',                          # Teléfono del solicitante
+            'customfield_12530': {'id': '15160'},                       # 15160 - Tipo de Servicio: Mantenimiento
+            'customfield_11509': {'id': '12817'},                       # 12817 - Impacto: Medio
+            'customfield_11101': numero_cambio,                         # ivanti
+            'customfield_11801': {'id': '13548'},                       # Subdirección
+            'customfield_11309': {'id': '12171'},                       # Célula responsable: 12171 - Productos crédito
+            #'customfield_12708': {'name': 'rafael.gutierrez'},          # Product Owner
+            'customfield_12709': {'name': 'sergio.trevino'},            # Líder desarrollo
+            'customfield_11729': [{'id': '13132'}],                     # Areas involucradas: 13132 - SOP. APP, 13133 - SOP. TÉCNICO
+            'customfield_11105': '6 PM antes del cierre de créditos',   # Ventana de implementación
+            'customfield_11107': 'Seguir los pasos de instalación del archivo ZIP', # Plan de instalación
+            'customfield_11730': [{'id': '13189'}],                     # Servicios Involucrados
+            'customfield_13105': {'id': '15976'},                       # Área causante: 15976 - Productos crédito
+            'customfield_11108': datetime.now().strftime('%Y-%m-%d'),   # Fecha propuesta de instalación
+            'customfield_13001': {'id': '15605'},                       # VoBo Comité de Diseño: 15605 - No Requerido
+            'customfield_16401': {'id': '26602'},                       # Plan de Reversa: Si
+            'customfield_16304': 'NO APLICA',                           # Justificación de No Reversa
+        }
+
+        new_issue = self.jira.jira_session.create_issue(fields=issue_dict)
+        logger.info(f"Tarea de instalación de paquete creada: {new_issue.key}")
+        return new_issue
+
+
+    def create_package(self, key_jira):
+        # path = input(f"Ingrese la ruta donde se guardará el paquete (o presione Enter para usar la ruta por defecto={os.getenv('DEFAULT_PATH_PACKAGES')}): ")
+        # if path:
+        #     package = Package(key_jira, path)
+        # else:
+        #     package = Package(key_jira)
+
+        package = Package(key_jira)
+
+        package.fill_helpdesk()
+        package.create_functional_especfication()
+        package.export_helpdesk_to_pdf()
+        print(package.modified_objects_map)
+
+    def scriptsbase_files(self, issue, branches_info):
+        cc = self.jira.get_value_field(issue, 'customfield_11101').strip()
+        output_path = f'scripts/outputs/{issue.key}-{cc}'
+        
+        ensure_directory_exists(f'{output_path}/instalacion')
+        ensure_directory_exists(f'{output_path}/reversa')
+
+        for branch in branches_info:
+            if branch and branch[0].get('project') == 'SYB16' and 'sps' in branch[0].get('repository'):
+                for sps_obj in branch:
+                    sp_name = remove_sql_extension(sps_obj.get('path_file'))
+                    self.sybase.create_sp_modify_scripts(sp_name, output_path)
+
+
+    def move_and_upload_scripts(self, issue):
+        cc = self.jira.get_value_field(issue, 'customfield_11101').strip()
+        source_path = f'scripts/outputs/{issue.key}-{cc}'
+        scriptsbase_path = f'{self.local_repos}/scriptsBase'
+
+        git = Git()
+        git.git_pull_develop(scriptsbase_path)
+        git.git_clean_repo('scriptsBase')
+        git.git_reset_hard(scriptsbase_path)
+
+        git.checkout_or_create_branch('scriptsBase', f'feature/{issue.key}-{cc}')
+
+        handler = ScriptHandler('')
+        handler.move_files(f'{source_path}/instalacion', f'{scriptsbase_path}/{cc}')
+        handler.move_files(f'{source_path}/reversa', f'{scriptsbase_path}/r{cc}')
+
+        git.git_add_commit_push(
+            'scriptsBase',
+            f'feature/{issue.key}-{cc}',
+            f'Se agregan scripts de instalacion para el cambio {issue.key}')
+

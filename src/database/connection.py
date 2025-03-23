@@ -11,9 +11,9 @@ class DatabaseConnection:
     def connect(self):
         try:
             self.connection = pyodbc.connect(self.connection_string)
-            print("Conexión exitosa a la base de datos.")
+            logger.info("Conexión exitosa a la base de datos.")
         except pyodbc.Error as e:
-            print(f"Error al conectar a la base de datos: {e}")
+            logger.info(f"Error al conectar a la base de datos: {e}")
             raise
 
     def execute_query(self, query, params=None):
@@ -26,4 +26,4 @@ class DatabaseConnection:
     def close(self):
         if self.connection:
             self.connection.close()
-            print("Conexión cerrada.")
+            logger.info("Conexión cerrada.")

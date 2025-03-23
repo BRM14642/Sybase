@@ -1,0 +1,61 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║       CÓMPUTO CENTRAL  (Instalación Servidor Sibamex3)            ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+1.- Ingresar al servidor brmpsib3 con super usuario
+
+
+2.- Subir el archivo del SIB3.zip al servidor brmpsib3, agregar permisos propietarios para elusuario BRMPMID y Mover el archivo SIB3.zip a la ruta /home/BRMPMID/scripts/
+
+cd /home/BRMXXXX/
+chown BRMPMID:BRMPMID SIB3.zip
+chmod 755 SIB3.zip
+mv /home/BRMXXXX/SIB3.zip /home/BRMPMID/scripts/
+
+
+3.- Ingresar con usuario BRMPMID, agregar el numero de control de cambio en el archivo Instalacion.txt (para crear respaldo WARS ó EARS)
+su - BRMPMID
+
+    3.1- Agregar el numero de control de cambio ${numero_cambio} en el archivo Instalacion.txt (para crear respaldo) WARS ó EARS
+
+vi /home/BRMPMID/scripts/Instalacion.txt
+"${numero_cambio}"
+y guardar cambios :x!
+
+
+4.- Ejecutar el script de instalación
+
+cd scripts/
+./instala.sh
+ó  tambien puede ser /home/BRMPMID/scripts/instala.sh
+
+
+5.- Validar que el servicio de jboss levante correctamente
+
+tail -f /usr/jboss/standalone/log/server.log
+debe de mostrar cuando termine la leyenda:
+	JBoss ... inició en **** - Inició **** de *** servicios (** servicios son perezosos, pasivos o por demanda)
+
+
+7.- Entrar a /usr/jboss/standalone/deployments para ejecutar las siguientes líneas por separado y asegurarse que sea la misma cantidad de archivos encontrados(a la fecha 2 wars).
+
+		ls -l *.war | wc -l
+		ls -l *.war.deployed | wc -l
+
+
+8. Entrar a un navegador(preferentemente firefox 11.x) en la siguiente URL para validar que se haya desplegado correctamente la aplicación:
+	* 	https://brmpsib3.banregio.com:8443/sibamex
+
+
+9. Verificar que se vea la pantalla de login
+	9.1 Si no se cumple el punto 9, seguir los pasos del archivo de reversa de sibamex3 encontrado en el paquete.
+
+
+10. Firmarse a la aplicación con un BRM valido
+
+
+11. Verificar que al firmarse a la aplicación no aparezca ningún error en el log del jboss (Verificar en consola paso 6)
+	11.1	Si no se cumple el punto 11,  seguir los pasos del archivo de reversa de sibamex3 encontrado en el paquete.
+
+
+12. Instalación Finalizada.

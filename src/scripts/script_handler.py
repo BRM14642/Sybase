@@ -1,4 +1,8 @@
+import shutil
 from string import Template
+import os
+from src.utils.logging_config import logger
+
 
 class ScriptHandler:
     def __init__(self, template_path):
@@ -9,7 +13,7 @@ class ScriptHandler:
             with open(self.template_path, "r") as file:
                 return Template(file.read())
         except Exception as e:
-            print(f"Error al cargar la plantilla: {e}")
+            logger.info(f"Error al cargar la plantilla: {e}")
             return None
 
     def generate_script(self, table_name, new_columns, existing_columns):
@@ -41,6 +45,17 @@ class ScriptHandler:
         try:
             with open(output_path, "w") as file:
                 file.write(script)
-            print(f"Script guardado en {output_path}")
+            logger.info(f"Script guardado en {output_path}")
         except Exception as e:
-            print(f"Error al guardar el script: {e}")
+            logger.info(f"Error al guardar el script: {e}")
+
+    def move_files(self, source_dir, destination_dir):
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+
+        for filename in os.listdir(source_dir):
+            source_file = os.path.join(source_dir, filename)
+            destination_file = os.path.join(destination_dir, filename)
+
+            shutil.move(source_file, destination_file)
+            logger.info(f"Archivo movido: {source_file} --> {destination_file}")

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="_generation_" name="Packaging Generator">
+	<target name="_generation_" depends="N10004,N10025,N10036,N10047,N10058,N10069,N1007A,N1008B,N1009C,N100AD,N100BE,N100CF,N100E0,N100F1,N10102,N10113,N10124,N10135,N10146,N10157,N10168,N10179,N1018A,N1019B,N101AC,N101BD,N101CE,N101DF,N101F0,N10201,N10212,N10223,N10234,N10245,N10256,N10267,N10278,N10289,N1029B,N1029A,N102AB,N102BC,N102CD,N102DE,N102EF,N10316,N10315,N10319,N10326,N10351,N10352,N10350,N10360,N10361,N10320,N10305,N10321,N10306"/>
+	<target name="N10004" description="ReportesWEB.war">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ReportesWEB.war">
+			<zipfileset dir="ejecutables/servidor" prefix="WEB-INF/lib">
+				<include name="CrystalClear.jar"/>
+			</zipfileset>
+			<zipfileset dir="src/WEB-INF" prefix="WEB-INF">
+				<include name="web.xml"/>
+			</zipfileset>
+			<zipfileset dir="bin" prefix="WEB-INF/classes" includes="reporte/ejb/*.class, reporte/ejb/ce/*.class, reporte/ejb/ch/*.class, reporte/ejb/cl/*.class, reporte/ejb/cr/*.class, reporte/ejb/es/*.class, reporte/ejb/fi/*.class, reporte/ejb/in/*.class, reporte/ejb/md/*.class, reporte/ejb/ne/*.class, reporte/ejb/so/*.class, reporte/ejb/ab/*.class, reporte/ejb/ac/*.class, reporte/ejb/au/*.class, , reporte/ejb/fa/*.class, reporte/ejb/it/*.class"/>
+		</jar>
+	</target>
+	<target name="N10025" description="UtileriaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/UtileriaEJB.jar">
+			<zipfileset dir="bin" includes="utileria/*.class,utileria/ejb/*.class,utileria/medallia/*.class,utileria/notificaciones/*.class,utileria/service/*.class,utileria/escucha/*.class"/>
+		</jar>
+	</target>
+	<target name="N10036" description="BaseEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/BaseEJB.jar">
+			<zipfileset dir="bin" includes="base/ejb/*.class, base/next/anotaciones/*.class, base/next/dao/*.class, base/next/service/*.class, base/next/util/*.class,base/swing/*.class"/>
+		</jar>
+	</target>
+	<target name="N10047" description="SoporteEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SoporteEJB.jar">
+			<zipfileset dir="bin" includes="soporte/sql/*.class,soporte/store/*.class,soporte/dao/*.class,soporte/ejb/*.class,soporte/interfaces/*.class, soporte/accion/*.class, soporte/adaptador/*.class,soporte/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10058" description="GeneralEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/GeneralEJB.jar">
+			<zipfileset dir="bin" includes="general/dao/*.class,general/ejb/*.class,general/interfaces/*.class, general/sql/*.class, general/Aplicacion.class,general/accion/*.class,general/properties/*.properties,general/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10069" description="SeguridadEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SeguridadEJB.jar">
+			<zipfileset dir="bin" includes="seguridad/sql/*.class,seguridad/store/*.class,seguridad/dao/*.class,seguridad/ejb/*.class,seguridad/interfaces/*.class, seguridad/accion/*.class,seguridad/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N1007A" description="ClienteEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ClienteEJB.jar">
+			<zipfileset dir="bin" includes="cl/store/*.class,cl/dao/*.class,cl/ejb/*.class,cl/interfaces/*.class, cl/accion/*.class,cl/service/*.class, cl/adaptador/*.class,cl/client/*.class"/>
+		</jar>
+	</target>
+	<target name="N1008B" description="InternacionalEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/InternacionalEJB.jar">
+			<zipfileset dir="bin" includes="it/store/*.class,it/dao/*.class,it/ejb/*.class,it/interfaces/*.class,it/accion/*.class,it/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N1009C" description="ChequeEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ChequeEJB.jar">
+			<zipfileset dir="bin" includes="ch/store/*.class,ch/dao/*.class,ch/ejb/*.class,ch/interfaces/*.class,ch/accion/*.class,ch/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N100AD" description="SistemaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SistemaEJB.jar">
+			<zipfileset dir="bin" includes="sy/sql/*.class,sy/store/*.class,sy/dao/*.class,sy/ejb/*.class,sy/interfaces/*.class, sy/accion/*.class,sy/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N100BE" description="CreditoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CreditoEJB.jar">
+			<zipfileset dir="bin" includes="cr/sql/*.class,cr/store/*.class,cr/dao/*.class,cr/ejb/*.class,cr/interfaces/*.class, cr/accion/*.class,cr/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N100CF" description="VentanillaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/VentanillaEJB.jar">
+			<zipfileset dir="bin" includes="ve/sql/*.class,ve/store/*.class,ve/dao/*.class,ve/ejb/*.class,ve/interfaces/*.class,ve/adaptador/*.class, ve/sql/*.class, ve/accion/*.class,ve/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N100E0" description="ArrendaRegioEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ArrendaRegioEJB.jar">
+			<zipfileset dir="bin" includes="ab/adaptador/*.class,ab/store/*.class,ab/dao/*.class,ab/ejb/*.class,ab/interfaces/*.class,ab/accion/*.class,ab/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N100F1" description="AutoregioEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/AutoregioEJB.jar">
+			<zipfileset dir="bin" includes="au/store/*.class,au/dao/*.class,au/ejb/*.class,au/interfaces/*.class,au/accion/*.class,au/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10102" description="ArrendadoraEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ArrendadoraEJB.jar">
+			<zipfileset dir="bin" includes="ar/store/*.class,ar/dao/*.class,ar/ejb/*.class,ar/interfaces/*.class,ar/accion/*.class,ar/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10113" description="MesaDineroEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/MesaDineroEJB.jar">
+			<zipfileset dir="bin" includes="md/store/*.class,md/dao/*.class,md/ejb/*.class,md/interfaces/*.class, md/accion/*.class,md/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10124" description="InversionEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/InversionEJB.jar">
+			<zipfileset dir="bin" includes="in/store/*.class,in/dao/*.class,in/ejb/*.class,in/interfaces/*.class, in/accion/*.class,in/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10135" description="LavadoDineroEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/LavadoDineroEJB.jar">
+			<zipfileset dir="bin" includes="ld/store/*.class,ld/dao/*.class,ld/ejb/*.class,ld/interfaces/*.class,ld/accion/*.class,ld/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10146" description="ContabilidadEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ContabilidadEJB.jar">
+			<zipfileset dir="bin" includes="co/store/*.class,co/dao/*.class,co/ejb/*.class,co/interfaces/*.class,co/accion/*.class,co/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10157" description="FactorajeEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/FactorajeEJB.jar">
+			<zipfileset dir="bin" includes="fa/sql/*.class,fa/store/*.class,fa/dao/*.class,fa/ejb/*.class,fa/interfaces/*.class, fa/accion/*.class,fa/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10168" description="CajeroAutomaticoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CajeroAutomaticoEJB.jar">
+			<zipfileset dir="bin" includes="ct/sql/*.class,ct/store/*.class,ct/dao/*.class,ct/ejb/*.class,ct/interfaces/*.class, ct/accion/*.class,ct/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10179" description="CedeEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CedeEJB.jar">
+			<zipfileset dir="bin" includes="ce/store/*.class,ce/dao/*.class,ce/ejb/*.class,ce/interfaces/*.class,ce/accion/*.class,ce/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N1018A" description="TarjetaDebitoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/TarjetaDebitoEJB.jar">
+			<zipfileset dir="bin" includes="td/store/*.class,td/dao/*.class,td/ejb/*.class,td/interfaces/*.class, td/accion/*.class,td/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N1019B" description="AnalisisCreditoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/AnalisisCreditoEJB.jar">
+			<zipfileset dir="bin" includes="ac/sql/*.class,ac/store/*.class,ac/dao/*.class,ac/ejb/*.class,ac/interfaces/*.class, ac/accion/*.class,ac/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N101AC" description="InversionDinamicaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/InversionDinamicaEJB.jar">
+			<zipfileset dir="bin" includes="ne/sql/*.class,ne/store/*.class,ne/dao/*.class,ne/ejb/*.class,ne/interfaces/*.class, ne/accion/*.class,ne/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N101BD" description="FondoInversionEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/FondoInversionEJB.jar">
+			<zipfileset dir="bin" includes="fi/store/*.class,fi/dao/*.class,fi/ejb/*.class,fi/interfaces/*.class,fi/accion/*.class,fi/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N101CE" description="EspecialEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/EspecialEJB.jar">
+			<zipfileset dir="bin" includes="es/store/*.class,es/dao/*.class,es/ejb/*.class,es/interfaces/*.class,es/accion/*.class,es/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N101DF" description="PagoInterbancarioEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/PagoInterbancarioEJB.jar">
+			<zipfileset dir="bin" includes="pi/store/*.class,pi/dao/*.class,pi/ejb/*.class,pi/interfaces/*.class,pi/accion/*.class,pi/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N101F0" description="ChequeViajeroEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ChequeViajeroEJB.jar">
+			<zipfileset dir="bin" includes="cv/sql/*.class,cv/store/*.class,cv/dao/*.class,cv/ejb/*.class,cv/interfaces/*.class, cv/accion/*.class,cv/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10201" description="SpeuaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SpeuaEJB.jar">
+			<zipfileset dir="bin" includes="sp/store/*.class,sp/dao/*.class,sp/ejb/*.class,sp/interfaces/*.class,sp/accion/*.class,sp/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10212" description="CamaraEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CamaraEJB.jar">
+			<zipfileset dir="bin" includes="ca/store/*.class,ca/dao/*.class,ca/ejb/*.class,ca/interfaces/*.class,ca/accion/*.class,ca/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10223" description="FabricaDeCreditosEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/FabricaDeCreditosEJB.jar">
+			<zipfileset dir="bin" includes="fc/store/*.class,fc/dao/*.class,fc/ejb/*.class,fc/interfaces/*.class,fc/accion/*.class,fc/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10234" description="BancaTelefonicaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/BancaTelefonicaEJB.jar">
+			<zipfileset dir="bin" includes="bt/store/*.class,bt/dao/*.class,bt/ejb/*.class,bt/interfaces/*.class,bt/accion/*.class,bt/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10245" description="TarjetaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/TarjetaEJB.jar">
+			<zipfileset dir="bin" includes="ta/store/*.class,ta/dao/*.class,ta/ejb/*.class,ta/interfaces/*.class,ta/accion/*.class,ta/adaptador/*.class,ta/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10256" description="DomiciliacionEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/DomiciliacionEJB.jar">
+			<zipfileset dir="bin" includes="tf/store/*.class,tf/dao/*.class,tf/ejb/*.class,tf/interfaces/*.class,tf/accion/*.class,tf/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10267" description="CreditoConsumoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CreditoConsumoEJB.jar">
+			<zipfileset dir="bin" includes="cc/store/*.class,cc/dao/*.class,cc/ejb/*.class,cc/interfaces/*.class,cc/accion/*.class,cc/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10278" description="CobranzaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CobranzaEJB.jar">
+			<zipfileset dir="bin" includes="cb/store/*.class,cb/dao/*.class,cb/ejb/*.class,cb/interfaces/*.class,cb/accion/*.class,cb/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10289" description="BancaElectronicaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/BancaElectronicaEJB.jar">
+			<zipfileset dir="bin" includes="be/store/*.class,be/dao/*.class,be/ejb/*.class,be/interfaces/*.class,be/accion/*.class,be/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N1029A" description="SistemaExternoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SistemaExternoEJB.jar">
+			<zipfileset dir="bin" includes="se/store/*.class,se/dao/*.class,se/ejb/*.class,se/interfaces/*.class,se/accion/*.class,se/model/*.class,se/adaptador/*.class,se/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N1029B" description="SistemaInternoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SistemaInternoEJB.jar">
+			<zipfileset dir="bin" includes="si/store/*.class,si/dao/*.class,si/ejb/*.class,si/interfaces/*.class,si/adaptador/*.class,si/accion/*.class,si/model/*.class,si/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N102AB" description="RecursosHumanosEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/RecursosHumanosEJB.jar">
+			<zipfileset dir="bin" includes="rh/store/*.class,rh/dao/*.class,rh/ejb/*.class,rh/interfaces/*.class,rh/accion/*.class,rh/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N102BC" description="RiesgosEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/RiesgosEJB.jar">
+			<zipfileset dir="bin" includes="ri/store/*.class,ri/dao/*.class,ri/ejb/*.class,ri/interfaces/*.class,ri/accion/*.class,ri/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N102CD" description="GuardaValoresEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/GuardaValoresEJB.jar">
+			<zipfileset dir="bin" includes="gv/store/*.class,gv/dao/*.class,gv/ejb/*.class,gv/interfaces/*.class,gv/accion/*.class,gv/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N102DE" description="PuntoVentaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/PuntoVentaEJB.jar">
+			<zipfileset dir="bin" includes="pv/store/*.class,pv/dao/*.class,pv/ejb/*.class,pv/interfaces/*.class,pv/accion/*.class,pv/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N102EF" description="SeguroEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/SeguroEJB.jar">
+			<zipfileset dir="bin" includes="sg/store/*.class,sg/dao/*.class,sg/ejb/*.class,sg/interfaces/*.class,sg/adaptador/*.class,sg/accion/*.class,sg/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10316" description="CorresponsalesEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/CorresponsalesEJB.jar">
+			<zipfileset dir="bin" includes="cs/store/*.class,cs/dao/*.class,cs/ejb/*.class,cs/interfaces/*.class,cs/accion/*.class,cs/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10320" description="DerivadosEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/DerivadosEJB.jar">
+			<zipfileset dir="bin" includes="de/store/*.class,de/dao/*.class,de/ejb/*.class,de/interfaces/*.class,de/accion/*.class,de/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10315" description="NuevaBancaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/NuevaBancaEJB.jar">
+			<zipfileset dir="bin" includes="nb/store/*.class,nb/dao/*.class,nb/ejb/*.class,nb/interfaces/*.class,nb/accion/*.class,nb/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10319" description="PagosEmpresarialesEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/PagosEmpresarialesEJB.jar">
+			<zipfileset dir="bin" includes="pe/store/*.class,pe/dao/*.class,pe/ejb/*.class,pe/interfaces/*.class,pe/accion/*.class,pe/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10350" description="BuroInternoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/BuroInternoEJB.jar">
+			<zipfileset dir="bin" includes="bi/store/*.class,bi/dao/*.class,bi/ejb/*.class,bi/interfaces/*.class,bi/accion/*.class,bi/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10351" description="RecuperacionCarteraEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/RecuperacionCarteraEJB.jar">
+			<zipfileset dir="bin" includes="rc/store/*.class,rc/dao/*.class,rc/ejb/*.class,rc/interfaces/*.class,rc/accion/*.class,rc/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10352" description="ParametricoEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ParametricoEJB.jar">
+			<zipfileset dir="bin" includes="pa/store/*.class,pa/dao/*.class,pa/ejb/*.class,pa/interfaces/*.class,pa/accion/*.class,pa/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10326" description="BancoGarantiasEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/BancoGarantiasEJB.jar">
+			<zipfileset dir="bin" includes="bg/store/*.class,bg/dao/*.class,bg/ejb/*.class,bg/interfaces/*.class,bg/accion/*.class,bg/service/*.class"/>
+		</jar>
+	</target>
+
+	<target name="N10360" description="TesoreriaEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/TesoreriaEJB.jar">
+			<zipfileset dir="bin" includes="te/store/*.class,te/dao/*.class,te/ejb/*.class,te/interfaces/*.class,te/accion/*.class,te/service/*.class"/>
+		</jar>
+	</target>
+	<target name="N10321" description="ReporteRawEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/ReporteRawEJB.jar">
+			<zipfileset dir="bin" includes="reporteraw/ejb/*.class,reporteraw/dao/*.class,reporteraw/interfaces/*.class,reporteraw/ejb/*.class"/>
+		</jar>
+	</target>
+
+	<target name="N10361" description="AsesoriaInversionEJB.jar">
+		<mkdir dir="ejecutables/servidor"/>
+		<jar destfile="ejecutables/servidor/AsesoriaInversionEJB.jar">
+			<zipfileset dir="bin" includes="ai/store/*.class, ai/dao/*.class, ai/ejb/*.class, ai/interfaces/*.class, ai/accion/*.class,ai/service/*.class"/>
+		</jar>
+	</target>
+
+	<target name="N10305" description="Sibamex21.ear">
+		<jar destfile="Sibamex21.ear">
+			<zipfileset dir="src/META-INF" prefix="META-INF">
+				<include name="application.xml"/>
+				<include name="ejb-jar.xml"/>
+				<include name="jboss.xml"/>
+			</zipfileset>
+			<zipfileset dir="ejecutables/servidor">
+				<include name="ReportesWEB.war"/>
+			</zipfileset>
+		</jar>
+	</target>
+	<target name="N10306" description="Copy jars to deploy dir">
+		<copy todir="\Users\ivan.riveros\Documents\AmbientesDesa\Sibamex21\jboss-5.1.0.GA\server\default\deploy">
+			<fileset dir="ejecutables/servidor/">
+				<exclude name="**/ReportesWEB.war"/>
+				<exclude name="**/CrystalClear.jar"/>
+				<exclude name="**/javax.servlet.jar"/>
+				<exclude name="**/jboss-j2ee.jar"/>
+				<exclude name="**/rowset.jar"/>
+				<exclude name="**/conectorpagotenenciaqro.jar"/>
+			</fileset>
+		</copy>
+		<copy file="Sibamex21.ear" todir="\Users\ivan.riveros\Documents\AmbientesDesa\Sibamex21\jboss-5.1.0.GA\server\default\deploy"/>
+	</target>
+</project>

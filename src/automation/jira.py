@@ -3,8 +3,9 @@ import requests
 from jira import JIRA
 from dotenv import load_dotenv
 
-from scr.utils.logging_config import logger
-from scr.utils.utils import get_dev_status
+from src.automation.xml_handler import XML_Handler
+from src.utils.logging_config import logger
+from src.utils.utils import get_dev_status
 load_dotenv()
 
 class Jira:
@@ -19,10 +20,10 @@ class Jira:
     def test_connection(self):
         try:
             user = self.jira_session.myself()
-            print(f"Conexion exitosa. Usuario: {user['emailAddress']}")
+            logger.info(f"Conexion exitosa. Usuario: {user['emailAddress']}")
             return True
         except Exception as e:
-            print(f"Error al conectar: {e}")
+            logger.info(f"Error al conectar: {e}")
             return False
 
     def get_current_sprint(self, board_id):
@@ -39,7 +40,7 @@ class Jira:
     def list_issue_types(self):
         issue_types = self.jira_session.issue_types()
         for issue_type in issue_types:
-            print(f"ID: {issue_type.id}, Name: {issue_type.name}")
+            logger.info(f"ID: {issue_type.id}, Name: {issue_type.name}")
 
     def get_issue_type_id(self, issue_type_name):
         issue_types = self.jira_session.issue_types()
@@ -58,20 +59,20 @@ class Jira:
         """
         issue = self.jira_session.issue(issue_key)
         for field_name, field_value in issue.fields.__dict__.items():
-            print(f"{field_name}: {field_value}")
+            logger.info(f"{field_name}: {field_value}")
         fields = issue.fields
-        print("Campos disponibles:")
-        print(dir(fields))
+        logger.info("Campos disponibles:")
+        logger.info(dir(fields))
 
     def list_projects(self):
         projects = self.jira_session.projects()
         for project in projects:
-            print(f"ID: {project.id} -> Key: {project.key} -> Name: {project.name}")
+            logger.info(f"ID: {project.id} -> Key: {project.key} -> Name: {project.name}")
 
     def print_all_fields_metadata(self):
         all_fields = self.jira_session.fields()
         for field in all_fields:
-            print(f"ID: {field['id']}, Name: {field['name']}, Schema: {field.get('schema', {})}")
+            logger.info(f"ID: {field['id']}, Name: {field['name']}, Schema: {field.get('schema', {})}")
 
     def get_project_id(self, project_key):
         project = self.jira_session.project(project_key)
@@ -99,7 +100,7 @@ class Jira:
         }
 
         new_issue = self.jira_session.create_issue(fields=issue_dict)
-        print(f"Subtarea creada: {new_issue.key}")
+        logger.info(f"Subtarea creada: {new_issue.key}")
         return new_issue
 
     def get_parent_key(self, subtask_key):
@@ -153,13 +154,13 @@ class Jira:
         if data.get("detail"):
             detail = data["detail"][0]
             pull_requests = detail.get("pullRequests", [])
-            print("Pull Requests relacionados:")
+            logger.info("Pull Requests relacionados:")
             for pr in pull_requests:
-                print(f"Pull Request: {pr['name']}")
-                print(f"Source Branch: {pr['source']['repository']}")
-                print("-" * 40)
+                logger.info(f"Pull Request: {pr['name']}")
+                logger.info(f"Source Branch: {pr['source']['repository']}")
+                logger.info("-" * 40)
         else:
-            print("No se encontraron datos relacionados.")
+            logger.info("No se encontraron datos relacionados.")
 
     def get_diff_branch(self, workspace, name_repository, source_branch, destination_branch="develop"):
         logger.debug(f"Obteniendo diferencias de {workspace}/{name_repository} entre las ramas {source_branch} y {destination_branch}...")
@@ -222,7 +223,7 @@ class Jira:
         issue = self.jira_session.issue(issue_key)
         for field_name, field_value in issue.raw['fields'].items():
             descri = self.get_custom_field_description(field_name)
-            print(f"{descri} --> {field_name}: {field_value}")
+            logger.info(f"{descri} --> {field_name}: {field_value}")
 
     def extract_project_name(self, url):
         """
@@ -251,5 +252,86 @@ class Jira:
         for field in all_fields:
             if field['id'] == custom_field_id:
                 return field['name']
-        print(f"Custom field {custom_field_id} not found")
+        logger.info(f"Custom field {custom_field_id} not found")
         return 'Custom field not found'
+
+    def list_changes2(self, key_jira):
+        branches_info = self.get_branches_from_task(key_jira)
+        modified_objects = []
+        for branch in branches_info:
+            dif = self.get_diff_branch(branch['project_id'], branch['name_repository'], branch['branch_name'])
+            modified_objects.append(dif)
+
+        return modified_objects
+
+    def clasify_changes(self, key_jira):
+        """
+        Obtiene y agrupa los objetos modificados en las ramas de una tarea de Jira.
+        :param key_jira:
+        :return: Objeto con las listas de tablas, sps, índices y clases modificadas
+        :rtype: dict
+        """
+
+        xml_handler = XML_Handler()
+        sib21_client_directories = ['/dao/', '/bean/', '/control/', '/interfaces/']
+
+        branches_info = self.get_branches_from_task(key_jira)
+        grouped_objects = {
+            'tablas': [],
+            'sps': [],
+            'indices': [],
+            'classes': [],
+            'SIB21P_cliente': [],
+            'SIB21P_servidor': [],
+            'SIB21P_reports': [],
+            'SIB3P_cliente': [],
+            'SIB3P_servidor': [],
+            'SIB3P_reports': [],
+            'others': []
+        }
+
+        for branch in branches_info:
+            dif = self.get_diff_branch(branch['project_id'], branch['name_repository'], branch['branch_name'])
+
+            for obj in dif:
+                added = False
+                repository = obj['repository']
+                project = obj['project']
+
+                if 'tablas' in repository:
+                    grouped_objects['tablas'].append(obj)
+                elif 'sps' in repository:
+                    grouped_objects['sps'].append(obj)
+                elif 'indice' in repository:
+                    grouped_objects['indices'].append(obj)
+                elif 'SIB21P' in project:
+                    path_file = f"{repository}/{obj['path_file']}"
+
+                    if 'Reportes' in repository:
+                        grouped_objects['SIB21P_reports'].append(obj)
+                        continue
+
+                    if xml_handler.class_belongs_to_jar(path_file):
+                        grouped_objects['SIB21P_servidor'].append(obj)
+                    else:
+                        grouped_objects['SIB21P_cliente'].append(obj)
+                        added = True
+
+                    if not added and any(keyword in path_file for keyword in sib21_client_directories):
+                        grouped_objects['SIB21P_cliente'].append(obj)
+
+                    grouped_objects['classes'].append(obj)
+                elif 'SIB3P' in project:
+                    parts = repository.rsplit('-', 1)
+                    type_sib3 = parts[-1] if len(parts) > 1 else ''
+
+                    if type_sib3 == 'extjs':
+                        grouped_objects['SIB3P_cliente'].append(obj)
+                    elif type_sib3 == 'api':
+                        grouped_objects['SIB3P_servidor'].append(obj)
+
+                    grouped_objects['classes'].append(obj)
+                else:
+                    grouped_objects['others'].append(obj)
+        logger.info(grouped_objects)
+        return grouped_objects

@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 import requests
+
+from src.utils.logging_config import logger
+
 load_dotenv()
 
 
@@ -18,10 +21,10 @@ class Bitbucket:
         if response.status_code == 200:
             with open(file_path, "wb") as file:
                 file.write(response.content)
-                print(f"Archivo {file_path} descargado correctamente.")
+                logger.info(f"Archivo {file_path} descargado correctamente.")
                 return file_path
         else:
-            print(f"Error al descargar el archivo: {response.status_code} - {response.text}")
+            logger.info(f"Error al descargar el archivo: {response.status_code} - {response.text}")
             return None
 
     def download_file_to(self, output_path, repository, remote_file_path, branch):
@@ -32,8 +35,8 @@ class Bitbucket:
         if response.status_code == 200:
             with open(file_path, "wb") as file:
                 file.write(response.content)
-                print(f"Archivo {file_path} descargado correctamente.")
+                logger.info(f"Archivo {file_path} descargado correctamente.")
                 return file_path
         else:
-            print(f"Error al descargar el archivo: {response.status_code} - {response.text}")
+            logger.info(f"Error al descargar el archivo: {response.status_code} - {response.text}")
             return None

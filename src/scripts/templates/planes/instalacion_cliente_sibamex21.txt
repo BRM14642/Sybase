@@ -1,0 +1,9 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║       SOPORTE TECNICO  (Instalación Cliente Sibamex21)            ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+1. Respaldar el jar actual, y actualizar con el jar nuevo en la ruta correspondiente
+Cliente:
+${jars}
+
+2.   Instalación Finalizada.

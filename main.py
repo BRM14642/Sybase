@@ -1,10 +1,12 @@
 import os
 
-from scr.automation.automation import Automation
-from scr.automation.bitbucket import Bitbucket
-from scr.automation.git import Git
-from scr.automation.jira import Jira
-from scr.utils.utils import get_dev_status, remove_sql_extension, capitalize_initials, get_server_hey, get_server_br, SERVERS_BR, clean_string
+from src.automation.automation import Automation
+from src.automation.bitbucket import Bitbucket
+from src.automation.docx import DocumentHandler
+from src.automation.git import Git
+from src.automation.jira import Jira
+from src.automation.package import Package
+from src.utils.utils import get_dev_status, remove_sql_extension, capitalize_initials, get_server_hey, get_server_br, SERVERS_BR, clean_string
 
 
 
@@ -12,15 +14,34 @@ from scr.utils.utils import get_dev_status, remove_sql_extension, capitalize_ini
 
 
 def main():
+    bitbucket = Bitbucket()
     auto = Automation()
     jira = Jira()
 
+    auto.create_package('TCPC-18067')
+    #objetos = jira.list_changes('TCPC-17452')
+    # imprimir el contenido de cada objeto en 'objetos'
+    #print(objetos)
+
+    # auto.create_package('TCPC-17892')
+
+    # issue = jira.jira_session.issue('TCPC-17892')
+    #
+    # branches_info = jira.get_branches_from_task('TCPC-17892')
+    #
+    # modified_objects = []
+    # for branch in branches_info:
+    #     dif = jira.get_diff_branch(branch['project_id'], branch['name_repository'], branch['branch_name'])
+    #     modified_objects.append(dif)
+    #
+    # auto.scriptsbase_files(issue, modified_objects)
+
     # Ejemplo funcional para crear una tarea de instalación tradicional
     # auto.create_traditional_package_task(
-    #     'TCPC-17592',
-    #     'Mantenimiento en proceso de aplicación de sobregiros en fecha de vencimiento',
-    #     'Se realiza el ajuste en el proceso de aplicación de sobregiros para que se apliquen correctamente también en la fecha de vencimiento de la fecha de vencimiento de la línea de crédito',
-    #     '51553'
+    #     'TCPC-17998',
+    #     'Ajuste de código para renovación de seguros de auto',
+    #     'Se ajustan las validaciones de edad del cliente para permitir que, en las renovaciones del seguro de auto, se pueda dar de alta con o sin seguro de vida, considerando también el mes entre la fecha de nacimiento del cliente y la fecha de renovación del seguro y ya no solo el año.',
+    #     '52845'
     # )
 
     # my_jql = 'assignee = currentUser() AND sprint in openSprints() AND issuetype = Story'
@@ -43,8 +64,13 @@ def main():
 
 
     #jira.print_issue_fields_metadata('TCPC-17080')
-    auto.fill_helpdesk('TCPC-17593')
-    #auto.update_branches_from_task("TCPC-17421")
+    #auto.fill_helpdesk('TCPC-17736')
+
+
+    #
+    # auto.move_and_upload_scripts(issue)
+
+    # auto.update_branches_from_task("TCPC-17892")
 
 
 
@@ -56,8 +82,8 @@ def main():
     #clone_url = git.generate_clone_url(browse_url)
     #print(clone_url)
 
-    #base_directory = '/Users/ivan.riveros/Documents/AmbientesDesa/Sibamex21/Sibamex_21/src'
-    #itbucket.iterate_and_pull(base_directory)
+    # base_directory = '/Users/ivan.riveros/Documents/AmbientesDesa/Sibamex21/Sibamex_21/src'
+    # bitbucket.iterate_and_pull(base_directory)
 
     #dirs_to_exclude = ['principal', 'dir2']
     #bitbucket.iterate_and_reset(base_directory, dirs_to_exclude)

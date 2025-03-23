@@ -3,6 +3,13 @@
 
 ## Inicializar proyecto
 En terminal ejecutar el siguiente comando:
+
+### Instalación de Dependencias
+```sh
+chmod +x setup.sh
+sudo ./setup.sh
+```
+### Instalación de Librerias
 ```bash
 pip install -r requirements.txt
 ```
@@ -18,7 +25,12 @@ cp .env.example .env
 2. Abre el archivo `.env` y modifica las variables de entorno según sea necesario.
 3. Guarda el archivo .env. Ahora tu aplicación debería poder cargar estas variables de entorno correctamente.
 
-Ver la metadata de los campos que contiente una tarea de jira y sus valores o valores permitidos: https://devops.banregio.com:8443/rest/api/2/issue/{Key_Jira}/editmeta
+
+## Recursos
+
+### Jira
+1. Ver la metadata de los campos que contiente una tarea de jira y sus valores o valores permitidos: 
+https://devops.banregio.com:8443/rest/api/2/issue/{Key_Jira}/editmeta
 https://confluence.atlassian.com/jirakb/how-to-retrieve-available-options-for-a-multi-select-customfield-via-jira-rest-api-815566715.html
 
 

@@ -1,6 +1,6 @@
 import subprocess
 import time
-from scr.utils.logging_config import logger
+from src.utils.logging_config import logger
 
 class LibreOffice:
     @staticmethod

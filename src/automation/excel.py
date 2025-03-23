@@ -1,10 +1,9 @@
-import copy
 from odf.opendocument import load
 from odf.table import Table, TableRow, TableCell
 from odf.text import P
-from odf.style import Style, ParagraphProperties
-from scr.utils.logging_config import logger
-import xml.etree.ElementTree as ET  # Para convertir a XML en depuración
+from src.utils.logging_config import logger
+import subprocess
+
 
 class ODSHandler:
     def __init__(self, file_path, sheet_name=None):
@@ -24,7 +23,8 @@ class ODSHandler:
 
     def get_cell(self, row_index, cell_index):
         row = self.get_row(row_index)
-        return row.getElementsByType(TableCell)[cell_index]
+        cell = row.getElementsByType(TableCell)[cell_index]
+        return cell
 
     def read_cell(self, row_index, cell_index):
         """
@@ -51,7 +51,11 @@ class ODSHandler:
         cell = self.get_cell(row_index, cell_index)
         for child in list(cell.childNodes):
             cell.removeChild(child)
-        cell.addElement(P(text=value))
+
+        if isinstance(value, str) and value.startswith('of:='):
+            cell.setAttribute('formula', value[3:])
+        else:
+            cell.addElement(P(text=value))
 
     def copy_row_with_format(self, target_row_index, format_row_index):
         """
@@ -128,5 +132,30 @@ class ODSHandler:
                 text_content = ""
                 for p in cell.getElementsByType(P):
                     text_content += p.text
-                print(text_content, end=' ')
-            print()
+                logger.info(text_content, end=' ')
+            logger.info()
+
+    def replace_text_in_row(self, row_index, old_text, new_text):
+        """
+        Reemplaza el texto en todas las celdas de una fila específica.
+        :param row_index: índice de la fila en la que se realizará el reemplazo
+        :param old_text: texto a reemplazar
+        :param new_text: nuevo texto
+        :return:
+        """
+        row = self.get_row(row_index)
+        for cell in row.getElementsByType(TableCell):
+            for p in cell.getElementsByType(P):
+                if p.firstChild and old_text in p.firstChild.data:
+                    p.firstChild.data = p.firstChild.data.replace(old_text, new_text)
+
+
+    def export_ods_sheet_to_pdf(self, archivo_ods, nombre_hoja, archivo_pdf):
+        command = [
+            "/Applications/LibreOffice.app/Contents/Resources/python",
+            "/Users/ivan.riveros/Documents/MisAutomatizaciones/Sybase/src/automation/export_ods_to_pdf.py",
+            archivo_ods,
+            nombre_hoja,
+            archivo_pdf
+        ]
+        subprocess.run(command)

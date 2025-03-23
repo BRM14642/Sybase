@@ -9,3 +9,4 @@ pyexcel-ods3
 reportlab
 unotools
 pyuno
+python-docx

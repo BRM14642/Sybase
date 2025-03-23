@@ -1,8 +1,9 @@
 import re
 import shutil
-from scr.automation.bitbucket import Bitbucket
-from scr.scripts.script_handler import ScriptHandler
-from scr.utils.utils import get_default_value_to_string
+from src.automation.bitbucket import Bitbucket
+from src.scripts.script_handler import ScriptHandler
+from src.utils.logging_config import logger
+from src.utils.utils import get_default_value_to_string
 
 
 class Sybase:
@@ -39,17 +40,17 @@ class Sybase:
             with open(file_path, 'r') as file:
                 lines = file.readlines()
         except IOError as e:
-            print(f"Error reading file {file_path}: {e}")
+            logger.info(f"Error reading file {file_path}: {e}")
             return
 
         if line_number < 1 or line_number > len(lines):
-            print(f"Line number {line_number} is out of range.")
+            logger.info(f"Line number {line_number} is out of range.")
             return
 
         # Obtener el contenido de la línea específica
         original_content = lines[line_number - 1].rstrip()
-        print(f"Original content: '{original_content}'")
-        print(f"modified content: '{original_content + str_to_add}'")
+        logger.info(f"Original content: '{original_content}'")
+        logger.info(f"modified content: '{original_content + str_to_add}'")
 
         # Modificar la línea específica
         lines[line_number - 1] = original_content + str_to_add
@@ -57,9 +58,9 @@ class Sybase:
         try:
             with open(file_path, 'w') as file:
                 file.writelines(lines)
-            print(f"Line {line_number} modified successfully.")
+            logger.info(f"Line {line_number} modified successfully.")
         except IOError as e:
-            print(f"Error writing to file {file_path}: {e}")
+            logger.info(f"Error writing to file {file_path}: {e}")
 
     # TODO Validar cuando se agrega mas de una columna a la tabla que no tiene
     #  NumTransac puede que algunos renglones queden sin coma al final
@@ -68,7 +69,7 @@ class Sybase:
             with open(file_path, 'r') as file:
                 sql_content = file.readlines()
         except IOError as e:
-            print(f"Error reading file {file_path}: {e}")
+            logger.info(f"Error reading file {file_path}: {e}")
             return
 
         column_pattern = re.compile(
@@ -80,28 +81,28 @@ class Sybase:
         line_field = ''
         transac_field_found = False
         for i, line in enumerate(sql_content):
-            print(line)
+            logger.info(line)
             if line == '\n' or line.strip() == '':
-                print("vacío")
+                logger.info("vacío")
                 continue
             if re.match(r'^\s*NumTransac\s', line):
                 transac_field_found = True
                 insert_position = i - 1
                 break
             if column_pattern.match(line):
-                print("Columna")
+                logger.info("Columna")
                 line_field = line
                 insert_position = i + 1
 
         columns = column_pattern.findall(line_field)
 
-        print(f"insert_position:{insert_position} columns:{columns} new_columns:{new_columns}")
+        logger.info(f"insert_position:{insert_position} columns:{columns} new_columns:{new_columns}")
 
         #line_field = line_field.replace(columns[0][0], new_columns[0]['name'])
-        print(f"nueva line {line_field}")
+        logger.info(f"nueva line {line_field}")
 
         if insert_position is None:
-            print("No se encontró el campo NumTransac en el archivo.")
+            logger.info("No se encontró el campo NumTransac en el archivo.")
             return
 
         new_column_format = ''
@@ -112,7 +113,7 @@ class Sybase:
             new_column_format = new_column_format.replace(columns[0][2], column['type'])
 
             formatted_new_columns.append(new_column_format)
-            print(f"Formatted new column: {new_column_format}")
+            logger.info(f"Formatted new column: {new_column_format}")
 
 
 
@@ -127,9 +128,9 @@ class Sybase:
         try:
             with open(file_path, 'w') as file:
                 file.writelines(updated_sql_content)
-            print(f"New columns added to {file_path}")
+            logger.info(f"New columns added to {file_path}")
         except IOError as e:
-            print(f"Error writing to file {file_path}: {e}")
+            logger.info(f"Error writing to file {file_path}: {e}")
 
         if not transac_field_found:
             self.add_string_specific_line(file_path, insert_position, ',\n')
@@ -233,9 +234,9 @@ class Sybase:
         string_new_values = string_integrated_colums
         # Crear una cadena donde los nombres de new_columns existan en string_integrated_colums reemplazarlas con el valor por defecto que se obtendran de SYBASE_DEFAULT_VALUES
         for column in new_columns:
-            print(column)
+            logger.info(column)
             default_value = get_default_value_to_string(column['type'])
-            print(default_value)
+            logger.info(default_value)
             string_new_values = string_new_values.replace(column['name'], default_value)
 
         script = temp.substitute(
@@ -320,10 +321,37 @@ class Sybase:
 
         return columns_str
 
+    def create_sp_modify_scripts(self, sp_name, output_path):
+        template = ScriptHandler('scripts/templates/sps/drop_sp.sql')
+        temp = template.load_template()
+
+        if not temp:
+            return None
+
+        script = temp.substitute(
+            sp_name=f"{sp_name}"
+        )
+        template.save_script(script, f"{output_path}/instalacion/{sp_name}_DROP.sql")
+        template.save_script(script, f"{output_path}/reversa/r_{sp_name}_DROP.sql")
+
+        template = ScriptHandler('scripts/templates/sps/grant_sp.sql')
+        temp = template.load_template()
+
+        if not temp:
+            return None
+
+        script = temp.substitute(
+            sp_name=f"{sp_name}"
+        )
+        template.save_script(script, f"{output_path}/instalacion/{sp_name}_GRANT.sql")
+        template.save_script(script, f"{output_path}/reversa/r_{sp_name}_GRANT.sql")
+
+
+
     def copy_file_with_new_name(self, source_path, destination_path):
         try:
             shutil.copy(source_path, destination_path)
-            print(f"File copied from {source_path} to {destination_path}")
+            logger.info(f"File copied from {source_path} to {destination_path}")
         except IOError as e:
-            print(f"Error copying file: {e}")
+            logger.info(f"Error copying file: {e}")
 

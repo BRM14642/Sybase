@@ -1,5 +1,10 @@
 import re
 import os
+import shutil
+
+from src.utils.logging_config import logger
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Diccionario de tipos de datos de Sybase ASE con valores por defecto
 SYBASE_DEFAULT_VALUES = {
@@ -37,16 +42,50 @@ DEV_STATUS_VALUES = {
 
 # Diccionarios de servidores
 SERVERS_HEY = {
-    "SYB16": 'Sybase Hey Producción (HBO1PDSYBPRO)',
-    "SIB21P": 'SIBAMEX 21 Producción Hey',
-    "SIB3P-api": 'Servidor SIBAMEX3 Producción Hey',
-    "SIB3P-extjs": 'Cliente SIBAMEX3 Producción Hey',
+    "SYB16": {
+        'description': 'Sybase Hey Producción',
+        'hostname': 'hbo1pdsybpro',
+        'ip': '10.4.96.21',
+        'db': 'BANREGIO'
+    },
+    "SIB21P_servidor": {
+        'description': 'SIBAMEX 21 Producción Hey',
+        'hostname': 'hbo1pajbsa01',
+        'ip': '10.4.69.23'
+    },
+    "SIB3P_servidor": {
+        'description': 'Servidor SIBAMEX3 Producción Hey',
+        'hostname': 'hbo1pasib3v2',
+        'ip': '10.4.78.26'
+    },
+    "SIB3P_cliente": {
+        'description': 'Cliente SIBAMEX3 Producción Hey',
+        'hostname': 'hbo1pasib3v3',
+        'ip': '10.4.69.26'
+    }
 }
 SERVERS_BR = {
-    "SYB16": 'Sybase Banregio Producción (BRMPSYBPRO)',
-    "SIB21P": 'SIBAMEX 21 Producción Banregio',
-    "SIB3P-api": 'Servidor SIBAMEX3 Producción Banregio',
-    "SIB3P-extjs": 'Cliente SIBAMEX3 Producción Banregio',
+    "SYB16": {
+        'description': 'Sybase Banregio Producción',
+        'hostname': 'brmpsybpro',
+        'ip': '10.1.1.35',
+        'db': 'COREBD'
+    },
+    "SIB21P_servidor": {
+        'description': 'SIBAMEX 21 Producción Banregio',
+        'hostname': 'brmvjbsa01',
+        'ip': '10.1.69.114'
+    },
+    "SIB3P_servidor": {
+        'description': 'Servidor SIBAMEX3 Producción Banregio',
+        'hostname': 'brmpsib3v2',
+        'ip': '10.1.2.173'
+    },
+    "SIB3P_cliente": {
+        'description': 'Cliente SIBAMEX3 Producción Banregio',
+        'hostname': 'brmpsib3v3',
+        'ip': '10.1.2.174'
+    }
 }
 
 # Expresión regular para nombre de archivos de sps
@@ -93,6 +132,36 @@ def get_server_hey(project):
 def get_server_br(project):
     return SERVERS_BR.get(project, None)
 
+def get_both_servers(project):
+    servers = {
+        'br': SERVERS_BR.get(project, None),
+        'hey': SERVERS_HEY.get(project, None)
+    }
+    return servers
+
 # limpiar coma y espacios al final de una cadena
 def clean_string(text):
     return text.strip().rstrip(',').strip()
+
+def ensure_directory_exists(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        logger.info(f"Directory created: {directory_path}")
+
+def duplicate_file_in(original_file_path, new_file_path):
+    new_file_dir = os.path.dirname(new_file_path)
+    if not os.path.exists(new_file_dir):
+        os.makedirs(new_file_dir)
+
+    if os.path.exists(new_file_path):
+        os.remove(new_file_path)
+
+    shutil.copyfile(original_file_path, new_file_path)
+    logger.info(f"File created: {new_file_path} from {original_file_path}")
+
+def delete_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        logger.info(f"Archivo {file_path} eliminado.")
+    else:
+        logger.info(f"El archivo {file_path} no existe.")
